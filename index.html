@@ -1,11 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>世界建筑地图 - 实时浏览全球建筑</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-fullscreen/2.4.0/Control.FullScreen.min.css" />
+    <title>Ping Pong Game</title>
     <style>
         * {
             margin: 0;
@@ -14,508 +12,286 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: #f0f0f0;
-        }
-
-        #map {
-            width: 100%;
-            height: 100vh;
-        }
-
-        .info-panel {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            max-width: 350px;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .building-info {
-            margin: 15px 0;
-            padding: 10px;
-            background: #f9f9f9;
-            border-left: 4px solid #4CAF50;
-            border-radius: 4px;
-        }
-
-        .building-name {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .building-detail {
-            color: #666;
-            margin: 5px 0;
-        }
-
-        .building-detail strong {
-            color: #333;
-        }
-
-        .search-box {
-            position: absolute;
-            top: 10px;
-            left: 60px;
-            z-index: 1000;
-            background: white;
-            padding: 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
             display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: Arial, sans-serif;
         }
 
-        .search-box input {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            width: 200px;
-            font-size: 14px;
-        }
-
-        .search-box button {
-            padding: 8px 16px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.3s;
-        }
-
-        .search-box button:hover {
-            background: #45a049;
-        }
-
-        .building-list {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            max-height: 300px;
-            overflow-y: auto;
-            max-width: 300px;
-            z-index: 999;
-        }
-
-        .building-item {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .building-item:hover {
-            background: #f0f0f0;
-        }
-
-        .building-item:last-child {
-            border-bottom: none;
-        }
-
-        .building-item-name {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 3px;
-        }
-
-        .building-item-location {
-            font-size: 12px;
-            color: #999;
-        }
-
-        .title {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            z-index: 999;
+        .container {
             text-align: center;
         }
 
-        .title h1 {
-            font-size: 20px;
-            color: #333;
-            margin-bottom: 5px;
+        h1 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 32px;
         }
 
-        .title p {
-            font-size: 12px;
-            color: #999;
+        canvas {
+            background: #000;
+            display: block;
+            border: 3px solid #fff;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            margin: 0 auto 20px;
+            cursor: none;
         }
 
-        .icon {
+        .info {
+            color: white;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .score {
+            color: #00ff00;
             font-size: 24px;
-            margin-right: 8px;
+            font-weight: bold;
+            margin-bottom: 15px;
         }
 
-        @media (max-width: 768px) {
-            .search-box {
-                left: 10px;
-                right: 10px;
-                flex-direction: column;
-            }
+        .controls {
+            color: white;
+            font-size: 16px;
+            margin-top: 20px;
+            line-height: 1.8;
+        }
 
-            .search-box input {
-                width: 100%;
-            }
+        .controls p {
+            margin: 5px 0;
+        }
 
-            .title {
-                right: 10px;
-                left: 10px;
-            }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
 
-            .building-list {
-                left: 10px;
-                right: 10px;
-                max-width: none;
-            }
+        button:hover {
+            background: #00cc00;
+            transform: scale(1.05);
+        }
+
+        .status {
+            color: #ffff00;
+            font-size: 20px;
+            font-weight: bold;
+            height: 30px;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div id="map"></div>
-
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="搜索建筑或地点 (如: 埃菲尔铁塔)">
-        <button onclick="searchBuilding()">搜索</button>
-        <button onclick="resetView()">重置视图</button>
+    <div class="container">
+        <h1>🏓 PING PONG</h1>
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        <div class="score">
+            Player: <span id="playerScore">0</span> | AI: <span id="aiScore">0</span>
+        </div>
+        <div class="status" id="status"></div>
+        <button onclick="resetGame()">New Game</button>
+        <div class="controls">
+            <p>Move mouse UP/DOWN to control paddle</p>
+            <p>First to 5 points wins!</p>
+        </div>
     </div>
-
-    <div class="title">
-        <h1>🌍 世界建筑地图</h1>
-        <p>点击建筑标记查看详情</p>
-    </div>
-
-    <div class="building-list" id="buildingList"></div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-fullscreen/2.4.0/Leaflet.fullscreen.min.js"></script>
 
     <script>
-        // 初始化地图
-        const map = L.map('map', {
-            preferCanvas: true
-        }).setView([20, 0], 2);
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-        // 添加卫星地图层和普通地图层
-        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: '&copy; Esri',
-            maxZoom: 18
-        });
+        // Game objects
+        const paddleHeight = 100;
+        const paddleWidth = 10;
+        const ballSize = 8;
 
-        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors',
-            maxZoom: 19
-        });
+        let player = {
+            x: 10,
+            y: canvas.height / 2 - paddleHeight / 2,
+            width: paddleWidth,
+            height: paddleHeight,
+            dy: 0,
+            score: 0
+        };
 
-        // 默认显示卫星地图
-        satelliteLayer.addTo(map);
+        let ai = {
+            x: canvas.width - paddleWidth - 10,
+            y: canvas.height / 2 - paddleHeight / 2,
+            width: paddleWidth,
+            height: paddleHeight,
+            dy: 0,
+            score: 0,
+            speed: 4
+        };
 
-        // 添加图层切换控制
-        L.control.layers(
-            {
-                '卫星地图': satelliteLayer,
-                '街道地图': streetLayer
-            },
-            {},
-            { position: 'topright' }
-        ).addTo(map);
+        let ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            dx: 5,
+            dy: 5,
+            size: ballSize
+        };
 
-        // 添加全屏控制
-        map.addControl(new L.Control.Fullscreen());
+        let gameActive = true;
+        let gameWinner = null;
 
-        // 世界著名建筑数据
-        const buildings = [
-            {
-                name: '埃菲尔铁塔',
-                location: '法国·巴黎',
-                lat: 48.8584,
-                lng: 2.2945,
-                icon: '🗼',
-                info: '世界最著名的铁塔之一，建于1889年',
-                type: '铁塔'
-            },
-            {
-                name: '自由女神像',
-                location: '美国·纽约',
-                lat: 40.6892,
-                lng: -74.0445,
-                icon: '🗽',
-                info: '美国的象征，位于自由岛',
-                type: '雕像'
-            },
-            {
-                name: '比萨斜塔',
-                location: '意大利·比萨',
-                lat: 43.3629,
-                lng: 12.3957,
-                icon: '📐',
-                info: '著名的倾斜钟塔',
-                type: '塔'
-            },
-            {
-                name: '伦敦大本钟',
-                location: '英国·伦敦',
-                lat: 51.4975,
-                lng: -0.1251,
-                icon: '🏴',
-                info: '威斯敏斯特宫的标志性钟塔',
-                type: '钟塔'
-            },
-            {
-                name: '国会大厦',
-                location: '英国·伦敦',
-                lat: 51.4993,
-                lng: -0.1246,
-                icon: '🏛️',
-                info: '英国议会所在地',
-                type: '政府建筑'
-            },
-            {
-                name: '克里姆林宫',
-                location: '俄罗斯·莫斯科',
-                lat: 55.7558,
-                lng: 37.6173,
-                icon: '🏰',
-                info: '俄罗斯的权力中心',
-                type: '宫殿'
-            },
-            {
-                name: '圣母大教堂',
-                location: '意大利·米兰',
-                lat: 45.4642,
-                lng: 9.1900,
-                icon: '⛪',
-                info: '哥特式建筑杰作',
-                type: '教堂'
-            },
-            {
-                name: '泰姬陵',
-                location: '印度·阿格拉',
-                lat: 27.1751,
-                lng: 78.0421,
-                icon: '🕌',
-                info: '世界七大奇迹之一',
-                type: '陵墓'
-            },
-            {
-                name: '万里长城',
-                location: '中国·北京',
-                lat: 40.3561,
-                lng: 116.0117,
-                icon: '🏯',
-                info: '世界最长的建筑工程',
-                type: '防御工事'
-            },
-            {
-                name: '紫禁城',
-                location: '中国·北京',
-                lat: 39.9169,
-                lng: 116.3972,
-                icon: '🏯',
-                info: '中国古代帝王宫殿',
-                type: '宫殿'
-            },
-            {
-                name: '东京塔',
-                location: '日本·东京',
-                lat: 35.6586,
-                lng: 139.7454,
-                icon: '📡',
-                info: '红色的电视塔，夜景美丽',
-                type: '塔'
-            },
-            {
-                name: '金阁寺',
-                location: '日本·京都',
-                lat: 35.0394,
-                lng: 135.7292,
-                icon: '🏯',
-                info: '日本古代建筑杰作',
-                type: '寺庙'
-            },
-            {
-                name: '悉尼歌剧院',
-                location: '澳大利亚·悉尼',
-                lat: -33.8568,
-                lng: 151.2153,
-                icon: '🎭',
-                info: '世界著名的表演艺术中心',
-                type: '剧院'
-            },
-            {
-                name: '比利时国会大厦',
-                location: '比利时·布鲁塞尔',
-                lat: 50.8431,
-                lng: 4.3663,
-                icon: '🏛️',
-                info: '比利时议会所在地',
-                type: '政府建筑'
-            },
-            {
-                name: '圣彼得大教堂',
-                location: '梵蒂冈',
-                lat: 41.9029,
-                lng: 12.4534,
-                icon: '⛪',
-                info: '世界最大的教堂',
-                type: '教堂'
-            },
-            {
-                name: '自由塔',
-                location: '美国·纽约',
-                lat: 40.7127,
-                lng: -74.0134,
-                icon: '🏢',
-                info: '纽约天际线的新标志',
-                type: '摩天楼'
-            },
-            {
-                name: '迪拜塔',
-                location: '阿联酋·迪拜',
-                lat: 25.1972,
-                lng: 55.2744,
-                icon: '🏙️',
-                info: '世界最高的建筑',
-                type: '摩天楼'
-            },
-            {
-                name: '基督像',
-                location: '巴西·里约热内卢',
-                lat: -22.9519,
-                lng: -43.2105,
-                icon: '🗿',
-                info: '巴西的象征',
-                type: '雕像'
-            },
-            {
-                name: '马丘比丘',
-                location: '秘鲁',
-                lat: -13.1631,
-                lng: -72.5450,
-                icon: '🏔️',
-                info: '印加文明遗迹',
-                type: '古迹'
-            },
-            {
-                name: '金字塔',
-                location: '埃及·吉萨',
-                lat: 29.9792,
-                lng: 31.1342,
-                icon: '🔺',
-                info: '世界七大奇迹',
-                type: '纪念碑'
-            }
-        ];
-
-        const markerGroup = L.featureGroup();
-        const markers = {};
-
-        // 添加所有建筑标记
-        function addAllBuildings() {
-            buildings.forEach(building => {
-                const customIcon = L.divIcon({
-                    html: `<div style="font-size: 30px; cursor: pointer; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5));">${building.icon}</div>`,
-                    className: 'building-marker',
-                    iconSize: [40, 40],
-                    iconAnchor: [20, 40],
-                    popupAnchor: [0, -40]
-                });
-
-                const marker = L.marker([building.lat, building.lng], {
-                    icon: customIcon
-                }).bindPopup(createPopupContent(building));
-
-                markers[building.name] = marker;
-                markerGroup.addLayer(marker);
-            });
-
-            markerGroup.addTo(map);
-        }
-
-        // 创建弹出内容
-        function createPopupContent(building) {
-            return `
-                <div class="building-info">
-                    <div class="building-name">${building.icon} ${building.name}</div>
-                    <div class="building-detail">📍 ${building.location}</div>
-                    <div class="building-detail">🏗️ ${building.type}</div>
-                    <div class="building-detail">ℹ️ ${building.info}</div>
-                    <div class="building-detail">坐标: ${building.lat.toFixed(4)}, ${building.lng.toFixed(4)}</div>
-                </div>
-            `;
-        }
-
-        // 搜索建筑
-        function searchBuilding() {
-            const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
-            if (!searchTerm) return;
-
-            const result = buildings.find(b => 
-                b.name.toLowerCase().includes(searchTerm) ||
-                b.location.toLowerCase().includes(searchTerm) ||
-                b.type.toLowerCase().includes(searchTerm)
-            );
-
-            if (result) {
-                map.setView([result.lat, result.lng], 15);
-                markers[result.name].openPopup();
-            } else {
-                alert('未找到该建筑，请尝试其他关键词');
-            }
-        }
-
-        // 重置视图
-        function resetView() {
-            map.setView([20, 0], 2);
-            document.getElementById('searchInput').value = '';
-        }
-
-        // 更新建筑列表
-        function updateBuildingList() {
-            const listHTML = buildings.map(building => `
-                <div class="building-item" onclick="goToBuilding('${building.name}')">
-                    <div class="building-item-name">${building.icon} ${building.name}</div>
-                    <div class="building-item-location">${building.location}</div>
-                </div>
-            `).join('');
+        // Mouse tracking
+        document.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseY = e.clientY - rect.top;
             
-            document.getElementById('buildingList').innerHTML = '<strong>📍 建筑列表</strong>' + listHTML;
-        }
-
-        // 导航到建筑
-        function goToBuilding(name) {
-            const building = buildings.find(b => b.name === name);
-            if (building) {
-                map.setView([building.lat, building.lng], 15);
-                markers[name].openPopup();
-            }
-        }
-
-        // 回车键搜索
-        document.getElementById('searchInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchBuilding();
+            // Smooth paddle movement
+            if (mouseY - paddleHeight / 2 < canvas.height - paddleHeight) {
+                if (mouseY - paddleHeight / 2 > 0) {
+                    player.y = mouseY - paddleHeight / 2;
+                }
             }
         });
 
-        // 初始化
-        addAllBuildings();
-        updateBuildingList();
+        function resetGame() {
+            player.score = 0;
+            ai.score = 0;
+            gameActive = true;
+            gameWinner = null;
+            resetBall();
+            updateScore();
+            updateStatus('');
+        }
+
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.dx = (Math.random() > 0.5 ? 1 : -1) * 5;
+            ball.dy = (Math.random() - 0.5) * 8;
+        }
+
+        function updateScore() {
+            document.getElementById('playerScore').textContent = player.score;
+            document.getElementById('aiScore').textContent = ai.score;
+        }
+
+        function updateStatus(msg) {
+            document.getElementById('status').textContent = msg;
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            // Ball movement
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            // Ball collision with top and bottom
+            if (ball.y - ball.size < 0 || ball.y + ball.size > canvas.height) {
+                ball.dy = -ball.dy;
+                ball.y = ball.y - ball.size < 0 ? ball.size : canvas.height - ball.size;
+            }
+
+            // Ball collision with paddles
+            if (
+                ball.x - ball.size < player.x + player.width &&
+                ball.y > player.y &&
+                ball.y < player.y + player.height
+            ) {
+                ball.dx = -ball.dx;
+                ball.dx *= 1.05; // Increase speed slightly
+                ball.x = player.x + player.width + ball.size;
+                ball.dy += player.dy * 0.2;
+            }
+
+            if (
+                ball.x + ball.size > ai.x &&
+                ball.y > ai.y &&
+                ball.y < ai.y + ai.height
+            ) {
+                ball.dx = -ball.dx;
+                ball.dx *= 1.05;
+                ball.x = ai.x - ball.size;
+                ball.dy += ai.dy * 0.2;
+            }
+
+            // Ball out of bounds
+            if (ball.x < 0) {
+                ai.score++;
+                updateScore();
+                checkWin();
+                resetBall();
+            } else if (ball.x > canvas.width) {
+                player.score++;
+                updateScore();
+                checkWin();
+                resetBall();
+            }
+
+            // AI movement
+            const aiCenter = ai.y + ai.height / 2;
+            if (aiCenter < ball.y - 35) {
+                ai.y += ai.speed;
+            } else if (aiCenter > ball.y + 35) {
+                ai.y -= ai.speed;
+            }
+
+            // Keep AI paddle in bounds
+            if (ai.y < 0) ai.y = 0;
+            if (ai.y + ai.height > canvas.height) ai.y = canvas.height - ai.height;
+        }
+
+        function checkWin() {
+            if (player.score >= 5) {
+                gameActive = false;
+                gameWinner = 'YOU WIN! 🎉';
+                updateStatus(gameWinner);
+            } else if (ai.score >= 5) {
+                gameActive = false;
+                gameWinner = 'AI WINS! 🤖';
+                updateStatus(gameWinner);
+            }
+        }
+
+        function draw() {
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw center line
+            ctx.strokeStyle = '#fff';
+            ctx.setLineDash([10, 10]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw paddles
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.fillRect(ai.x, ai.y, ai.width, ai.height);
+
+            // Draw ball
+            ctx.fillStyle = '#00ff00';
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start game
+        updateScore();
+        gameLoop();
     </script>
 </body>
 </html>
